@@ -346,7 +346,7 @@ namespace SerapKeremGameKit._UI
             // Resume game state
             if (StateManager.Instance != null)
             {
-                StateManager.Instance.ChangeState(GameState.OnStart);
+                StateManager.Instance.SetOnStart();
             }
         }
 
