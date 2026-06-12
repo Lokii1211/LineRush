@@ -22,7 +22,7 @@ public static class AdConfig
     /// a separate Banner ad unit in your AdMob dashboard (admob.google.com).
     /// Banner unit IDs use '/' separator, not '~'.
     /// </summary>
-    public const string BANNER_AD_UNIT_ID = "ca-app-pub-2857128148429490/6176198550";
+    public const string BANNER_AD_UNIT_ID = "ca-app-pub-2857128148429490/8599181917";
 
     /// <summary>Interstitial ad unit ID — shows between levels.</summary>
     public const string INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-2857128148429490/3671614281";
