@@ -23,7 +23,7 @@ env:
 
 jobs:
   # ───────────────────────────────────────────────
-  #  Activate Unity License + Build APK
+  #  Build Android APK (for testing / sideloading)
   # ───────────────────────────────────────────────
   build-apk:
     name: "📱 Build APK"
@@ -51,7 +51,7 @@ jobs:
         with:
           targetPlatform: Android
           buildName: LineRush
-          androidAppBundle: false
+          androidExportType: androidPackage
           unityVersion: auto
 
       - name: Upload APK
@@ -62,7 +62,7 @@ jobs:
           retention-days: 30
 
   # ───────────────────────────────────────────────
-  #  Build Android AAB (Play Store)
+  #  Build Android AAB (for Play Store upload)
   # ───────────────────────────────────────────────
   build-aab:
     name: "🏪 Build AAB (Play Store)"
@@ -90,7 +90,7 @@ jobs:
         with:
           targetPlatform: Android
           buildName: LineRush
-          androidAppBundle: true
+          androidExportType: androidAppBundle
           unityVersion: auto
           androidKeystoreName: ${{ secrets.ANDROID_KEYSTORE_NAME }}
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
