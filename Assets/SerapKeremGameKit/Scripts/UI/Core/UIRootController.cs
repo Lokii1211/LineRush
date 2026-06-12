@@ -7,6 +7,8 @@ using UnityEngine;
 using SerapKeremGameKit._Audio;
 using SerapKeremGameKit._Haptics;
 using _Game.UI;
+using _Game.Scoring;
+using _Game.Gameplay;
 
 namespace SerapKeremGameKit._UI
 {
@@ -18,6 +20,7 @@ namespace SerapKeremGameKit._UI
         [SerializeField] private FailPanel _fail;
         [SerializeField] private SettingsPanel _settings;
         [SerializeField] private RetryPanel _retry;
+        [SerializeField] private LevelSelectPanel _levelSelect;
 
         [Header("Data")]
         [SerializeField] private LevelConfig _fallbackConfig;
@@ -31,6 +34,7 @@ namespace SerapKeremGameKit._UI
         [SerializeField] private string _keyOnRestartDialog = "btn_tap";
         [SerializeField] private string _keyOnRestartConfirm = "btn_confirm";
         [SerializeField] private string _keyOnNext = "btn_tap";
+        [SerializeField] private string _keyOnHint = "hint_reveal";
 
         private void Awake()
         {
@@ -40,12 +44,14 @@ namespace SerapKeremGameKit._UI
             if (_fail == null) _fail = GetComponentInChildren<FailPanel>(true);
             if (_settings == null) _settings = GetComponentInChildren<SettingsPanel>(true);
             if (_retry == null) _retry = GetComponentInChildren<RetryPanel>(true);
+            if (_levelSelect == null) _levelSelect = GetComponentInChildren<LevelSelectPanel>(true);
 
             // Inject UIRoot into screens to avoid FindObjectOfType
             if (_hud != null) _hud.SetUIRoot(this);
             if (_win != null) _win.SetUIRoot(this);
             if (_fail != null) _fail.SetUIRoot(this);
             if (_retry != null) _retry.SetUIRoot(this);
+            if (_levelSelect != null) _levelSelect.SetUIRoot(this);
 
             // Ensure startup state: only HUD hidden initially (will be shown in Start)
             if (_win != null) _win.HideImmediate();
@@ -53,6 +59,7 @@ namespace SerapKeremGameKit._UI
             if (_settings != null) _settings.HideImmediate();
             if (_retry != null) _retry.HideImmediate();
             if (_hud != null) _hud.HideImmediate();
+            if (_levelSelect != null) _levelSelect.HideImmediate();
         }
 
         private void Start()
@@ -100,6 +107,9 @@ namespace SerapKeremGameKit._UI
                 ShowWin();
                 if (AudioManager.IsInitialized && !string.IsNullOrEmpty(_keyOnWin)) AudioManager.Instance.Play(_keyOnWin);
                 if (HapticManager.IsInitialized) HapticManager.Instance.Play(HapticType.Success);
+                
+                // Show interstitial ad on level complete
+                if (AdManager.Instance != null) AdManager.Instance.ShowInterstitialOnLevelComplete();
             }
             else if (current == GameState.OnLose)
             {
@@ -116,6 +126,7 @@ namespace SerapKeremGameKit._UI
             if (_fail != null) _fail.Hide(false);
             if (_settings != null) _settings.Hide(false);
             if (_retry != null) _retry.Hide(false);
+            if (_levelSelect != null) _levelSelect.Hide(false);
         }
 
         private void ShowWin()
@@ -126,14 +137,46 @@ namespace SerapKeremGameKit._UI
                 Level active = LevelManager.Instance.ActiveLevelInstance;
                 LevelConfig config = ResolveConfig(active);
 
-                int stars = StarEvaluator.EvaluateStarsByLives();
+                int stars = 1;
                 int reward = Mathf.Max(0, config != null ? config.WinCoins : 10);
                 int totalBefore = 0;
+                bool isNewBest = false;
+
                 if (CurrencyWallet.Instance != null)
                 {
                     totalBefore = CurrencyWallet.Instance.Coins;
                 }
-                _win.Setup(stars, reward, totalBefore, this);
+
+                // Use ScoreManager for enhanced scoring if available
+                if (ScoreManager.IsInitialized)
+                {
+                    LevelScoreResult scoreResult = ScoreManager.Instance.FinalizeLevel();
+                    stars = scoreResult.Stars;
+                    reward = scoreResult.CoinReward;
+
+                    int levelNumber = LevelManager.Instance.ActiveLevelNumber;
+                    LevelRecordResult record = LevelProgressTracker.RecordLevelResult(
+                        levelNumber, scoreResult.TotalScore, stars, scoreResult.IsPerfect, scoreResult.MaxCombo
+                    );
+                    isNewBest = record.IsNewBestScore;
+
+                    // Check achievements
+                    if (AchievementManager.Instance != null)
+                    {
+                        AchievementManager.Instance.CheckAfterLevelComplete(
+                            levelNumber, stars, scoreResult.CompletionTime, 
+                            scoreResult.MaxCombo, scoreResult.IsPerfect
+                        );
+                    }
+
+                    _win.SetupWithScore(stars, reward, totalBefore, this, scoreResult, isNewBest);
+                }
+                else
+                {
+                    stars = StarEvaluator.EvaluateStarsByLives();
+                    _win.Setup(stars, reward, totalBefore, this);
+                }
+                
                 _win.Show();
             }
         }
@@ -194,6 +237,7 @@ namespace SerapKeremGameKit._UI
             if (_fail != null && _fail != screen) _fail.Hide(true);
             if (_settings != null && _settings != screen) _settings.Hide(true);
             if (_retry != null && _retry != screen) _retry.Hide(true);
+            if (_levelSelect != null && _levelSelect != screen) _levelSelect.Hide(true);
         }
 
         public void OnRestartRequested()
@@ -206,12 +250,20 @@ namespace SerapKeremGameKit._UI
         public void OnRestartConfirmed()
         {
             HideAll();
+            
+            // Show interstitial ad on retry
+            if (AdManager.Instance != null) AdManager.Instance.ShowInterstitialOnRetry();
+            
             LevelManager.Instance.RestartLevel();
             if (_hud != null)
             {
                 _hud.Show(false);
                 _hud.SetLevelIndex(LevelManager.Instance.ActiveLevelNumber - 1);
             }
+
+            // Reset score tracking
+            if (ScoreManager.IsInitialized) ScoreManager.Instance.ResetTracking();
+
             if (AudioManager.IsInitialized && !string.IsNullOrEmpty(_keyOnRestartConfirm)) AudioManager.Instance.Play(_keyOnRestartConfirm);
             if (HapticManager.IsInitialized) HapticManager.Instance.Play(HapticType.Medium);
         }
@@ -238,6 +290,12 @@ namespace SerapKeremGameKit._UI
             if (CurrencyWallet.Instance != null && reward > 0)
             {
                 CurrencyWallet.Instance.Add(reward);
+                
+                // Check coin achievements
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.CheckCoinMilestone(CurrencyWallet.Instance.Coins);
+                }
             }
             OnNextLevelRequested();
         }
@@ -249,6 +307,101 @@ namespace SerapKeremGameKit._UI
             if (HapticManager.IsInitialized) HapticManager.Instance.Play(HapticType.Selection);
         }
 
+        /// <summary>
+        /// Handle hint request from HUD.
+        /// </summary>
+        public void OnHintRequested()
+        {
+            HintManager hintMgr = FindFirstObjectByType<HintManager>();
+            if (hintMgr == null) return;
+
+            bool hintUsed = hintMgr.RequestHint();
+            if (!hintUsed)
+            {
+                // No free hints — show rewarded ad
+                if (AdManager.Instance != null)
+                {
+                    AdManager.Instance.ShowRewardedAdForHint(() =>
+                    {
+                        hintMgr.GrantHintFromAd();
+                    });
+                }
+            }
+
+            if (AudioManager.IsInitialized && !string.IsNullOrEmpty(_keyOnHint)) AudioManager.Instance.Play(_keyOnHint);
+            if (HapticManager.IsInitialized) HapticManager.Instance.Play(HapticType.Light);
+        }
+
+        /// <summary>
+        /// Handle continue after watching rewarded ad on fail screen.
+        /// </summary>
+        public void OnContinueAfterAd()
+        {
+            HideAll();
+            if (_hud != null)
+            {
+                _hud.Show(false);
+                _hud.SetLevelIndex(LevelManager.Instance.ActiveLevelNumber - 1);
+            }
+            // Resume game state
+            if (StateManager.Instance != null)
+            {
+                StateManager.Instance.ChangeState(GameState.OnStart);
+            }
+        }
+
+        /// <summary>
+        /// Open level select screen.
+        /// </summary>
+        public void OnLevelSelectRequested()
+        {
+            HideAll();
+            if (_levelSelect != null) _levelSelect.Show();
+        }
+
+        /// <summary>
+        /// Handle level selected from level select screen.
+        /// </summary>
+        public void OnLevelSelected(int levelNumber)
+        {
+            HideAll();
+            LevelManager.Instance.SetLevelNumber(levelNumber);
+            LevelManager.Instance.LoadCurrentLevel();
+            if (_hud != null)
+            {
+                _hud.Show(false);
+                _hud.SetLevelIndex(levelNumber - 1);
+            }
+        }
+
+        /// <summary>
+        /// Handle daily challenge request from level select.
+        /// </summary>
+        public void OnDailyChallengeRequested()
+        {
+            if (DailyChallengeManager.Instance == null || !DailyChallengeManager.Instance.IsDailyAvailable()) return;
+
+            HideAll();
+            
+            // Configure daily challenge parameters
+            if (LivesManager.IsInitialized)
+            {
+                LivesManager.Instance.SetMaxLives(DailyChallengeManager.Instance.DailyLives);
+                LivesManager.Instance.ResetLives();
+            }
+            
+            // Use daily seed for procedural generation
+            int dailySeed = DailyChallengeManager.Instance.GetDailySeed();
+            // The ProceduralLevelGenerator uses seeds, so set the level number to daily range
+            LevelManager.Instance.SetLevelNumber(9000 + System.DateTime.Now.DayOfYear);
+            LevelManager.Instance.LoadCurrentLevel();
+            
+            if (_hud != null)
+            {
+                _hud.Show(false);
+                _hud.SetLevelIndex(-1); // Special display for daily
+            }
+        }
 
         public void UpdateTimeDisplay(float remainingTime)
         {

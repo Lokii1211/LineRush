@@ -224,6 +224,17 @@ namespace SerapKeremGameKit._Managers
             ActiveLevelNumber = nextLevel;
         }
 
+        /// <summary>
+        /// Set the active level number directly.
+        /// Used by level select screen and daily challenge.
+        /// </summary>
+        public void SetLevelNumber(int levelNumber)
+        {
+            TerminateCurrentLevel();
+            int maxLevel = GameplayLevelCount + _totalProceduralLevels;
+            ActiveLevelNumber = Mathf.Clamp(levelNumber, 1, maxLevel);
+        }
+
         private void TerminateCurrentLevel()
         {
             if (ActiveLevelInstance != null)

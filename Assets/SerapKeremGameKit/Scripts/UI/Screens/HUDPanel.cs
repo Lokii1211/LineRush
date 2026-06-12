@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using _Game.UI;
+using _Game.Gameplay;
 
 namespace SerapKeremGameKit._UI
 {
@@ -11,8 +12,17 @@ namespace SerapKeremGameKit._UI
         [SerializeField] private TextMeshProUGUI _timeText;
         [SerializeField] private Button _restartButton;
         [SerializeField] private Button _settingsButton;
+        [SerializeField] private Button _hintButton;
+        [SerializeField] private Button _levelSelectButton;
         [SerializeField] private UIRootController _uiRoot;
         [SerializeField] private EnergyPanel _energyPanel;
+
+        [Header("Hint Display")]
+        [SerializeField] private TextMeshProUGUI _hintCountText;
+        [SerializeField] private Image _hintButtonImage;
+
+        [Header("Score Display")]
+        [SerializeField] private TextMeshProUGUI _scoreText;
 
         // Legacy field kept for backward compatibility with existing prefabs
         [SerializeField] private HeartPanel _heartPanel;
@@ -23,6 +33,8 @@ namespace SerapKeremGameKit._UI
         {
             if (_restartButton != null) _restartButton.BindOnClick(this, OnRestartClicked);
             if (_settingsButton != null) _settingsButton.BindOnClick(this, OnSettingsClicked);
+            if (_hintButton != null) _hintButton.BindOnClick(this, OnHintClicked);
+            if (_levelSelectButton != null) _levelSelectButton.BindOnClick(this, OnLevelSelectClicked);
         }
 
         public override void Show(bool playSound = true)
@@ -36,6 +48,8 @@ namespace SerapKeremGameKit._UI
             
             SubscribeToLivesManager();
             InitializeEnergyPanel();
+            UpdateHintDisplay();
+            SubscribeToScoreManager();
         }
 
         private void Initialize()
@@ -48,6 +62,7 @@ namespace SerapKeremGameKit._UI
         {
             base.OnDestroy();
             UnsubscribeFromLivesManager();
+            UnsubscribeFromScoreManager();
             // Auto-unsubscribe handled by ButtonExtensions
         }
 
@@ -64,6 +79,30 @@ namespace SerapKeremGameKit._UI
             if (_uiRoot != null && _uiRoot.LivesManagerInstance != null)
             {
                 _uiRoot.LivesManagerInstance.OnLivesChanged -= HandleLivesChanged;
+            }
+        }
+
+        private void SubscribeToScoreManager()
+        {
+            if (_Game.Scoring.ScoreManager.IsInitialized)
+            {
+                _Game.Scoring.ScoreManager.Instance.OnScoreChanged += HandleScoreChanged;
+            }
+        }
+
+        private void UnsubscribeFromScoreManager()
+        {
+            if (_Game.Scoring.ScoreManager.IsInitialized)
+            {
+                _Game.Scoring.ScoreManager.Instance.OnScoreChanged -= HandleScoreChanged;
+            }
+        }
+
+        private void HandleScoreChanged(int score)
+        {
+            if (_scoreText != null)
+            {
+                _scoreText.text = score.ToString("N0");
             }
         }
 
@@ -114,6 +153,29 @@ namespace SerapKeremGameKit._UI
             }
         }
 
+        private void UpdateHintDisplay()
+        {
+            HintManager hintMgr = FindFirstObjectByType<HintManager>();
+            if (hintMgr != null)
+            {
+                UpdateHintCount(hintMgr.HintsRemaining);
+                hintMgr.OnHintCountChanged -= UpdateHintCount;
+                hintMgr.OnHintCountChanged += UpdateHintCount;
+            }
+        }
+
+        private void UpdateHintCount(int count)
+        {
+            if (_hintCountText != null)
+            {
+                _hintCountText.text = count > 0 ? count.ToString() : "AD";
+            }
+            if (_hintButtonImage != null)
+            {
+                _hintButtonImage.color = count > 0 ? ThemeConfig.HintButtonActiveColor : ThemeConfig.HintButtonInactiveColor;
+            }
+        }
+
         private static string FormatTime(float seconds)
         {
             int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(seconds));
@@ -131,6 +193,16 @@ namespace SerapKeremGameKit._UI
         private void OnSettingsClicked()
         {
             if (_uiRoot != null) _uiRoot.OnOpenSettings();
+        }
+
+        private void OnHintClicked()
+        {
+            if (_uiRoot != null) _uiRoot.OnHintRequested();
+        }
+
+        private void OnLevelSelectClicked()
+        {
+            if (_uiRoot != null) _uiRoot.OnLevelSelectRequested();
         }
 
         public void SetUIRoot(UIRootController uiRoot)

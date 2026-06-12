@@ -1,8 +1,9 @@
 using UnityEngine;
+using System;
 
 /// <summary>
-/// Ad Manager for LineRush.
-/// Manages Banner, Interstitial, and Rewarded ads.
+/// Ad Manager for Line Rush by Viya Nexus.
+/// Manages Banner, Interstitial, and Rewarded ads with smart loading.
 /// 
 /// SETUP INSTRUCTIONS:
 /// ===================
@@ -15,7 +16,7 @@ using UnityEngine;
 ///
 /// 3. Go to Assets > Google Mobile Ads > Settings
 ///    - Enable "Google Mobile Ads"
-///    - Set your Android App ID
+///    - Set your Android App ID: ca-app-pub-2857128148429490~6176198550
 ///
 /// 4. Attach this script to a GameObject in your first scene
 ///    (or use the AdManager prefab)
@@ -37,6 +38,9 @@ public class AdManager : MonoBehaviour
 
     private int levelCompleteCount = 0;
     private bool isInitialized = false;
+    private int failedLoadRetries = 0;
+    private const int MAX_RETRY_ATTEMPTS = 3;
+    private const float RETRY_DELAY = 5f;
 
     // -------------------------------------------------------
     // Uncomment these after importing Google Mobile Ads SDK:
@@ -98,7 +102,8 @@ public class AdManager : MonoBehaviour
     /// </summary>
     public void LoadBannerAd()
     {
-        Debug.Log($"[AdManager] Loading Banner Ad: {AdConfig.BANNER_AD_UNIT_ID}");
+        string adUnitId = AdConfig.GetBannerID();
+        Debug.Log($"[AdManager] Loading Banner Ad: {adUnitId}");
 
         // -------------------------------------------------------
         // Uncomment after importing Google Mobile Ads SDK:
@@ -112,7 +117,7 @@ public class AdManager : MonoBehaviour
         // 
         // // Create a banner at the bottom of the screen
         // bannerView = new BannerView(
-        //     AdConfig.BANNER_AD_UNIT_ID,
+        //     adUnitId,
         //     AdSize.Banner,
         //     AdPosition.Bottom
         // );
@@ -143,24 +148,27 @@ public class AdManager : MonoBehaviour
     /// </summary>
     public void LoadInterstitialAd()
     {
-        Debug.Log($"[AdManager] Loading Interstitial Ad: {AdConfig.INTERSTITIAL_AD_UNIT_ID}");
+        string adUnitId = AdConfig.GetInterstitialID();
+        Debug.Log($"[AdManager] Loading Interstitial Ad: {adUnitId}");
 
         // -------------------------------------------------------
         // Uncomment after importing Google Mobile Ads SDK:
         // -------------------------------------------------------
         // var adRequest = new AdRequest();
         // InterstitialAd.Load(
-        //     AdConfig.INTERSTITIAL_AD_UNIT_ID,
+        //     adUnitId,
         //     adRequest,
         //     (InterstitialAd ad, LoadAdError error) =>
         //     {
         //         if (error != null || ad == null)
         //         {
         //             Debug.LogError($"[AdManager] Interstitial ad failed to load: {error}");
+        //             RetryLoadWithDelay(() => LoadInterstitialAd());
         //             return;
         //         }
         //         Debug.Log("[AdManager] Interstitial ad loaded");
         //         interstitialAd = ad;
+        //         failedLoadRetries = 0;
         //         
         //         // Set up close callback to reload next ad
         //         interstitialAd.OnAdFullScreenContentClosed += () =>
@@ -215,8 +223,27 @@ public class AdManager : MonoBehaviour
         // }
     }
 
+    /// <summary>
+    /// Show interstitial after daily challenge completion.
+    /// </summary>
+    public void ShowInterstitialOnDailyComplete()
+    {
+        if (!enableInterstitial || !AdConfig.SHOW_AD_ON_DAILY_COMPLETE) return;
+
+        Debug.Log("[AdManager] Showing interstitial (daily challenge complete)");
+        
+        // if (interstitialAd != null && interstitialAd.CanShowAd())
+        // {
+        //     interstitialAd.Show();
+        // }
+        // else
+        // {
+        //     LoadInterstitialAd();
+        // }
+    }
+
     // =========================================================
-    // REWARDED AD - Watch ad for extra lives/rewards
+    // REWARDED AD - Watch ad for extra lives/hints/rewards
     // =========================================================
 
     /// <summary>
@@ -224,24 +251,27 @@ public class AdManager : MonoBehaviour
     /// </summary>
     public void LoadRewardedAd()
     {
-        Debug.Log($"[AdManager] Loading Rewarded Ad: {AdConfig.REWARDED_AD_UNIT_ID}");
+        string adUnitId = AdConfig.GetRewardedID();
+        Debug.Log($"[AdManager] Loading Rewarded Ad: {adUnitId}");
 
         // -------------------------------------------------------
         // Uncomment after importing Google Mobile Ads SDK:
         // -------------------------------------------------------
         // var adRequest = new AdRequest();
         // RewardedAd.Load(
-        //     AdConfig.REWARDED_AD_UNIT_ID,
+        //     adUnitId,
         //     adRequest,
         //     (RewardedAd ad, LoadAdError error) =>
         //     {
         //         if (error != null || ad == null)
         //         {
         //             Debug.LogError($"[AdManager] Rewarded ad failed to load: {error}");
+        //             RetryLoadWithDelay(() => LoadRewardedAd());
         //             return;
         //         }
         //         Debug.Log("[AdManager] Rewarded ad loaded");
         //         rewardedAd = ad;
+        //         failedLoadRetries = 0;
         //         
         //         rewardedAd.OnAdFullScreenContentClosed += () =>
         //         {
@@ -256,7 +286,7 @@ public class AdManager : MonoBehaviour
     /// Show rewarded ad. Returns true if ad was available.
     /// Call the onRewardEarned callback when user watches full ad.
     /// </summary>
-    public bool ShowRewardedAd(System.Action onRewardEarned, System.Action onAdClosed = null)
+    public bool ShowRewardedAd(Action onRewardEarned, Action onAdClosed = null)
     {
         Debug.Log("[AdManager] Attempting to show rewarded ad");
 
@@ -272,7 +302,62 @@ public class AdManager : MonoBehaviour
         
         Debug.Log("[AdManager] No rewarded ad available");
         // LoadRewardedAd();
+        
+        // In development (no SDK), simulate reward for testing
+#if UNITY_EDITOR
+        Debug.Log("[AdManager] EDITOR: Simulating reward for testing");
+        onRewardEarned?.Invoke();
+        return true;
+#else
         return false;
+#endif
+    }
+
+    /// <summary>
+    /// Show rewarded ad specifically for extra lives on fail screen.
+    /// </summary>
+    public bool ShowRewardedAdForExtraLives(Action onLivesGranted)
+    {
+        return ShowRewardedAd(() =>
+        {
+            Debug.Log($"[AdManager] Granting {AdConfig.REWARDED_EXTRA_LIVES} extra lives");
+            onLivesGranted?.Invoke();
+        });
+    }
+
+    /// <summary>
+    /// Show rewarded ad specifically for hint reveal.
+    /// </summary>
+    public bool ShowRewardedAdForHint(Action onHintGranted)
+    {
+        return ShowRewardedAd(() =>
+        {
+            Debug.Log("[AdManager] Granting hint from rewarded ad");
+            onHintGranted?.Invoke();
+        });
+    }
+
+    // =========================================================
+    // Retry Logic
+    // =========================================================
+    
+    private void RetryLoadWithDelay(Action loadAction)
+    {
+        failedLoadRetries++;
+        if (failedLoadRetries >= MAX_RETRY_ATTEMPTS)
+        {
+            Debug.LogWarning("[AdManager] Max retry attempts reached. Will try again on next opportunity.");
+            failedLoadRetries = 0;
+            return;
+        }
+        
+        StartCoroutine(RetryCoroutine(loadAction));
+    }
+
+    private System.Collections.IEnumerator RetryCoroutine(Action loadAction)
+    {
+        yield return new WaitForSeconds(RETRY_DELAY * failedLoadRetries);
+        loadAction?.Invoke();
     }
 
     // =========================================================

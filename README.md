@@ -1,226 +1,161 @@
-# 🚀⚡ LineRush
+# 🎯 Line Rush
 
-**LineRush** is a challenging line-based puzzle game where players strategically activate animated lines to clear the playfield. Avoid collisions, manage your energy, and complete all stages.
-Developed with **Unity**, the game features smooth animations, intelligent collision detection, procedural level generation, and a robust, scalable architecture.
+**An addictive arrow/line puzzle game by [Viya Nexus](https://github.com/Lokii1211)**
 
----
+Tap the arrows to send them rushing forward — but watch out! Lines that collide will bounce back. Clear all lines without running out of lives to beat each stage.
 
-## 🎮 About the Game
-
-LineRush is a line-based puzzle game where players activate lines by clicking on them.
-Each line moves forward with an animation while gradually disappearing from its tail.
-
-The core challenge lies in **timing your clicks correctly** to prevent collisions between lines.
-
-* When two lines collide, you lose an energy charge.
-* Clear all lines to win the stage.
+[![Build LineRush Android](https://github.com/Lokii1211/LineRush/actions/workflows/build-android.yml/badge.svg)](https://github.com/Lokii1211/LineRush/actions/workflows/build-android.yml)
 
 ---
 
-## ✨ Game Features
+## ✨ Features
 
-### 🎯 Core Mechanics
+### Core Gameplay
+- 🎮 **30 Hand-Crafted Levels** — Curated puzzles from simple crosses to "The Nexus" boss level
+- ♾️ **1000+ Procedural Levels** — Infinite replayability with difficulty scaling
+- 🔄 **Smart Line Physics** — Lines rush forward and reverse on collision
+- ⚡ **One-Tap Controls** — Simple but deep puzzle mechanics
 
-* ⚡ **Interactive Line System**
-  Activate precise, smooth forward animations by clicking on lines.
-* 💥 **Smart Collision Detection**
-  Advanced head-to-line collision system.
-* 🔋 **Energy Management**
-  Start with 5 energy charges and track remaining charges via themed UI.
-* 🏆 **Win / Lose Conditions**
-  Clear all lines to win; lose all energy to fail the stage.
-* 📊 **1010 Stages**
-  10 hand-crafted stages plus 1000 procedurally generated stages with increasing difficulty.
+### Engagement Systems
+- 🔥 **Combo System** — Chain line clears for score multipliers (1x → 2x → 3x → 5x)
+- ⭐ **Star Ratings** — 1-3 stars per level based on performance
+- 💡 **Hint System** — Stuck? Get a hint (1 free per level, more via rewarded ads)
+- 🏆 **15 Achievements** — Track milestones from "First Clear" to "Centurion"
+- 📅 **Daily Challenges** — New puzzle every day with streak bonuses
+- 🗺️ **Level Select** — Replay any level to improve your star rating
 
----
+### Monetization (AdMob)
+- 📢 **Banner Ads** — Non-intrusive bottom banner
+- 🎬 **Interstitial Ads** — Every 3 levels completed
+- 🎁 **Rewarded Ads** — Watch for extra lives or hints
 
-### 🎨 Visual Features
-
-* 🎬 **Smooth Animations**
-  DOTween-powered forward and backward line animations with button micro-animations.
-* 🎨 **Dynamic Color Feedback**
-  Lines change to orange-red on collision, neon green on completion.
-* 📹 **Automatic Camera Adjustment**
-  Camera automatically frames all lines per stage.
-* ✨ **Line Head Tracking**
-  A visual "head" object follows the line tip for better visibility.
-* 🎨 **Neon Theme**
-  Cyan/magenta/dark purple neon-on-dark color scheme.
+### Polish
+- 🔊 **Procedural Audio** — 13 unique synthesized sound effects
+- 💫 **DOTween Animations** — Smooth UI transitions and feedback
+- 🎨 **Neon Cyberpunk Theme** — Premium dark UI with glowing accents
+- 📱 **Mobile Optimized** — URP rendering, 60fps target
 
 ---
 
-## 🧠 Technical Features
+## 🏗️ Tech Stack
 
-* 🧱 **Component-Based Architecture**
-  Modular, SOLID-compliant design with clear separation of responsibilities.
-* ⚡ **Vector3 Array Pooling**
-  Zero-allocation animation system optimized for performance.
-* 🔄 **State Management**
-  Centralized game state control via a `StateManager`.
-* 🔊 **Procedural Audio**
-  Unique procedurally-generated sound effects for every game action.
-* 📂 **Hybrid Level System**
-  Prefab-based levels + procedural generation for 1000+ stages.
-* 🎛️ **Explicit Initialization**
-  Clear, deterministic initialization order instead of Unity's implicit lifecycle.
-* 🎮 **Styled Buttons**
-  Configurable button styles (Pill, Rounded, PlayArrow, Circle) with DOTween animations.
+| Component | Technology |
+|-----------|-----------|
+| Engine | Unity 6 (6000.0.58f2) |
+| Rendering | Universal Render Pipeline (URP) |
+| Language | C# |
+| Animation | DOTween |
+| Ads | Google Mobile Ads (AdMob) |
+| CI/CD | GitHub Actions (game-ci/unity-builder) |
+| Target | Android (API 23+), iOS |
 
 ---
 
-## 🛠️ Tools & Packages Used
+## 🚀 Quick Start
 
-### 📦 Unity Packages
+### Prerequisites
+- Unity 6 (version 6000.0.58f2)
+- Android Build Support module
+- Git LFS
 
-- ⚙️ **Unity Engine** — 6000.0.58f2 (Unity 6)
-- 🔄 **DOTween** — Tween-based animations for line movement and UI
-- 🧰 **TriInspector** — Advanced Inspector UI for efficient development
-- 🎨 **Universal Render Pipeline (URP)** — Modern and optimized rendering
-- 📝 **TextMeshPro** — Advanced text rendering for UI
-- ➰ **Line Renderer** — Core system for rendering and animating dynamic lines
+### Clone & Open
+```bash
+git clone https://github.com/Lokii1211/LineRush.git
+cd LineRush
+```
 
----
+Open the project in Unity Hub → Add → Browse to cloned folder.
 
-### 🧩 Custom Framework
-
-**GameKit** – Production-ready Unity infrastructure:
-
-* 📝 Logging and tracing system
-* 🔊 Pooling-based audio management with procedural sound support
-* 📳 Cross-platform haptic support
-* ✨ Auto-recycling particle system
-* ♻️ State-driven level system
-* 🖼️ Panel-based UI framework
-* 🔄 Game state management system
-* 💰 Currency / wallet system
-* 🧰 Guarded MonoSingleton architecture
+### Build via GitHub Actions (No Unity Required!)
+1. Fork or push to your GitHub repository
+2. Set up GitHub Secrets (see CI/CD section below)
+3. Go to **Actions** → **Build LineRush Android** → **Run workflow**
+4. Download the APK/AAB from the workflow artifacts
 
 ---
 
-## 🎨 Custom Systems
+## 📱 AdMob Configuration
 
-### ⚡ Line System
+| Ad Type | Unit ID |
+|---------|---------|
+| App ID | `ca-app-pub-2857128148429490~6176198550` |
+| Interstitial | `ca-app-pub-2857128148429490/3671614281` |
+| Rewarded | `ca-app-pub-2857128148429490/7934831924` |
 
-A fully custom-built line architecture including:
-
-* 🎬 **LineAnimation**
-  Forward/backward animation using array pooling (zero allocation)
-* 👆 **LineClick**
-  Input handling and line activation logic
-* 💥 **LineHeadCollisionDetector**
-  Precise collision detection between line heads and bodies
-* 🎨 **LineMaterialHandler**
-  Dynamic color management with success/failure feedback
-* 🗑️ **LineDestroyer**
-  Automatic cleanup after animation completion
-* ⚡ **LineRendererHead**
-  Visual head object that follows the line's endpoint
+Ad IDs are configured in [`AdConfig.cs`](Assets/_Game/Scripts/Ads/AdConfig.cs).
 
 ---
 
-### 🎛️ Game Systems
+## 🔄 CI/CD Pipeline
 
-* 🔋 **LivesManager** — Singleton-based energy charge management
-* 📹 **CameraManager** — Automatic camera adjustment based on level bounds
-* 🎯 **Level System** — Hybrid prefab + procedural level loading
-* 🔄 **StateManager** — Centralized game states (`Loading`, `OnStart`, `OnWin`, `OnLose`)
-* 🔊 **SoundGenerator** — Procedural audio synthesis (7 unique sounds)
-* 🎮 **StyledButton** — Configurable button component with micro-animations
+### GitHub Actions Workflows
 
----
+| Workflow | Purpose |
+|----------|---------|
+| `activation.yml` | Generate Unity license activation file |
+| `build-android.yml` | Build APK + AAB for Android |
 
-### 🌀 Procedural Level Generation
+### Required GitHub Secrets
 
-* 📊 **LevelDifficultyCurve** — ScriptableObject with AnimationCurves defining difficulty scaling
-* 🔧 **ProceduralLevelGenerator** — Creates levels algorithmically at runtime:
-  - Seeded randomness for deterministic layouts
-  - Configurable line count, grid size, directions, intersections
-  - 5 difficulty tiers from Tutorial to Expert
+| Secret | Description |
+|--------|-------------|
+| `UNITY_LICENSE` | Contents of your Unity .ulf license file |
+| `UNITY_EMAIL` | Unity account email |
+| `UNITY_PASSWORD` | Unity account password |
 
----
-
-## 🎯 How to Play
-
-### 📘 Basic Rules
-
-* 🎯 **Click to Activate**
-  Click on any line to activate it.
-* 💥 **Avoid Collisions**
-  Each collision costs one energy charge.
-* ⚡ **Line Completion**
-  Lines erase from the tail as they move and are removed after completion.
-* 🔋 **Manage Your Energy**
-  You start with 5 energy charges.
-* 🏆 **Win Condition**
-  Complete all lines without collisions.
-* 💔 **Lose Condition**
-  Lose all 5 energy charges.
+### How to Set Up (First Time)
+1. Go to **Actions** → **Acquire Unity License** → **Run workflow**
+2. Download the `.alf` file from artifacts
+3. Go to [license.unity3d.com/manual](https://license.unity3d.com/manual)
+4. Upload `.alf`, download `.ulf`
+5. Go to repo **Settings** → **Secrets** → **Actions**
+6. Create `UNITY_LICENSE` secret with `.ulf` file contents
+7. Create `UNITY_EMAIL` and `UNITY_PASSWORD` secrets
+8. Now run **Build LineRush Android** workflow
 
 ---
 
-### 🕹️ Controls
-
-* 🖱️ **Mouse / Touch** — Click or tap a line to activate
-* ⏸️ **No Re-activation** — Moving lines cannot be activated again
-* 🎯 **Strategy** — Analyze line placement carefully before clicking
-
----
-
-## 📦 Project Structure
+## 📂 Project Structure
 
 ```
 Assets/
 ├── _Game/
 │   ├── Scripts/
-│   │   ├── Line/        (Line, LineAnimation, LineClick, etc.)
-│   │   ├── UI/          (EnergyUI, EnergyPanel, ThemeConfig, StyledButton)
-│   │   ├── Audio/       (SoundGenerator, SoundLibrary)
-│   │   ├── Level/       (ProceduralLevelGenerator, LevelDifficultyCurve)
-│   │   └── Ads/         (AdManager, AdConfig)
-│   ├── Resources/
-│   │   ├── Levels/      (10 hand-crafted level prefabs)
-│   │   └── Line/
-│   ├── Scenes/
-│   │   └── GameScene.unity
-│   └── ...
-└── SerapKeremGameKit/   (Framework scripts)
+│   │   ├── Ads/          # AdManager, AdConfig
+│   │   ├── Audio/        # SoundGenerator, SoundLibrary
+│   │   ├── Gameplay/     # HintManager, DailyChallenge, Achievements
+│   │   ├── Level/        # ProceduralGenerator, Templates, DifficultyCurve
+│   │   ├── Line/         # Line, LineAnimation, LineClick, Collision
+│   │   ├── Scoring/      # ScoreManager, ComboDisplay, LevelProgress
+│   │   └── UI/           # ThemeConfig, LivesManager, EnergyPanel, LevelSelect
+│   └── Data/             # ScriptableObject assets
+├── SerapKeremGameKit/     # Core framework
+│   └── Scripts/
+│       ├── LevelSystem/  # LevelManager, StateManager, GameState
+│       └── UI/           # UIRootController, WinPanel, FailPanel, HUDPanel
+└── Scenes/               # Game scenes
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🎮 Level Difficulty Tiers
 
-### 📥 Installation
-
-1. Clone or download the repository
-2. Open the project in **Unity Hub** (Unity 6000.0.58f2 or later)
-3. Open the main scene: `Assets/_Game/Scenes/GameScene.unity`
-4. Press **Play**
-
----
-
-### 🛠️ Build
-
-1. Go to **File → Build Settings**
-2. Select the target platform
-3. Click **Build**
+| Levels | Tier | Lines | Pattern |
+|--------|------|-------|---------|
+| 1-10 | Tutorial | 2-4 | Simple prefab levels |
+| 11-15 | Intermediate | 4-6 | Cross patterns |
+| 16-20 | Advanced | 5-7 | Diagonal mazes |
+| 21-25 | Expert | 6-8 | Starburst & web |
+| 26-28 | Nightmare | 7-10 | Spiral & clockwork |
+| 29-30 | Impossible | 10-12 | Boss levels |
+| 31-1030 | Procedural | 2-15 | Algorithm generated |
 
 ---
 
-### 🔧 Configuration
+## 📄 License
 
-#### Ad Setup
-1. Replace placeholder IDs in `Assets/_Game/Scripts/Ads/AdConfig.cs` with your AdMob IDs
-2. Import Google Mobile Ads Unity plugin
-3. Configure in Assets > Google Mobile Ads > Settings
-
-#### Procedural Levels
-1. Create a `LevelDifficultyCurve` asset: Right-click in Project > Create > LineRush > Level Difficulty Curve
-2. Assign it to the `ProceduralLevelGenerator` component in the scene
-3. Adjust difficulty curves in the Inspector
+This project is proprietary software owned by **Viya Nexus**.
 
 ---
 
-## 📜 **License**
-
-This project is licensed under the MIT License.
+*Built with ❤️ by Viya Nexus*

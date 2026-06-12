@@ -3,7 +3,18 @@ name: Build LineRush Android (APK + AAB)
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:  # Allows manual trigger from GitHub UI
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_apk:
+        description: 'Build APK'
+        type: boolean
+        default: true
+      build_aab:
+        description: 'Build AAB (for Play Store)'
+        type: boolean
+        default: true
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -11,10 +22,14 @@ env:
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
 jobs:
-  build-android:
-    name: Build Android APK & AAB
+  # ───────────────────────────────────────────────
+  #  Build Android APK (for testing / sideloading)
+  # ───────────────────────────────────────────────
+  build-apk:
+    name: "📱 Build APK"
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_apk }}
 
     steps:
       # ─── Checkout ───
@@ -40,12 +55,46 @@ jobs:
           targetPlatform: Android
           buildName: LineRush
           androidAppBundle: false
+          unityVersion: 6000.0.58f2
           androidKeystoreName: ""
           androidKeystoreBase64: ""
           androidKeystorePass: ""
           androidKeyaliasName: ""
           androidKeyaliasPass: ""
-          unityVersion: auto
+
+      # ─── Upload APK artifact ───
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LineRush-APK-${{ github.run_number }}
+          path: build/Android/
+          retention-days: 30
+
+  # ───────────────────────────────────────────────
+  #  Build Android AAB (for Play Store upload)
+  # ───────────────────────────────────────────────
+  build-aab:
+    name: "🏪 Build AAB (Play Store)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_aab }}
+
+    steps:
+      # ─── Checkout ───
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      # ─── Cache Library folder ───
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Android-
 
       # ─── Build AAB ───
       - name: Build Android AAB
@@ -54,25 +103,17 @@ jobs:
           targetPlatform: Android
           buildName: LineRush
           androidAppBundle: true
-          androidKeystoreName: ""
-          androidKeystoreBase64: ""
-          androidKeystorePass: ""
-          androidKeyaliasName: ""
-          androidKeyaliasPass: ""
-          unityVersion: auto
-
-      # ─── Upload APK artifact ───
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: LineRush-APK
-          path: build/Android/*.apk
-          retention-days: 30
+          unityVersion: 6000.0.58f2
+          androidKeystoreName: ${{ secrets.ANDROID_KEYSTORE_NAME }}
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
       # ─── Upload AAB artifact ───
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: LineRush-AAB
-          path: build/Android/*.aab
+          name: LineRush-AAB-${{ github.run_number }}
+          path: build/Android/
           retention-days: 30

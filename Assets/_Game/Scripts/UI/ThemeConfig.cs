@@ -3,7 +3,7 @@ using UnityEngine;
 namespace _Game.UI
 {
     /// <summary>
-    /// Centralized theme configuration for LineRush.
+    /// Centralized theme configuration for Line Rush by Viya Nexus.
     /// All UI colors and visual constants are defined here.
     /// </summary>
     public static class ThemeConfig
@@ -31,7 +31,7 @@ namespace _Game.UI
         /// <summary>Failure feedback — Orange-Red</summary>
         public static readonly Color FailureColor = new Color(1f, 0.420f, 0.208f, 1f); // #FF6B35
         
-        /// <summary>Warning/caution — Amber</summary>
+        /// <summary>Warning/caution — Amber/Gold</summary>
         public static readonly Color WarningColor = new Color(1f, 0.835f, 0f, 1f); // #FFD500
         
         // ============================================
@@ -81,5 +81,96 @@ namespace _Game.UI
         
         /// <summary>Button text color</summary>
         public static readonly Color ButtonTextColor = Color.white;
+
+        // ============================================
+        // Combo Colors (NEW)
+        // ============================================
+        
+        /// <summary>Combo tier 1 color (2x) — Cyan</summary>
+        public static readonly Color ComboTier1Color = PrimaryColor;
+        
+        /// <summary>Combo tier 2 color (3x) — Green</summary>
+        public static readonly Color ComboTier2Color = SuccessColor;
+        
+        /// <summary>Combo tier 3 color (4x) — Magenta</summary>
+        public static readonly Color ComboTier3Color = SecondaryColor;
+        
+        /// <summary>Combo tier 4 color (5x+) — Gold</summary>
+        public static readonly Color ComboTier4Color = WarningColor;
+
+        // ============================================
+        // Achievement Colors (NEW)
+        // ============================================
+        
+        /// <summary>Achievement popup background</summary>
+        public static readonly Color AchievementBgColor = new Color(0.1f, 0.08f, 0.18f, 0.95f);
+        
+        /// <summary>Achievement title color — Gold</summary>
+        public static readonly Color AchievementTitleColor = WarningColor;
+        
+        /// <summary>Achievement description color</summary>
+        public static readonly Color AchievementDescColor = TextSecondary;
+
+        // ============================================
+        // Daily Challenge Colors (NEW)
+        // ============================================
+        
+        /// <summary>Daily challenge accent color — Electric Purple</summary>
+        public static readonly Color DailyChallengeColor = new Color(0.694f, 0.282f, 1f, 1f); // #B148FF
+        
+        /// <summary>Daily streak color — Flame Orange</summary>
+        public static readonly Color DailyStreakColor = new Color(1f, 0.584f, 0.118f, 1f); // #FF951E
+
+        // ============================================
+        // Hint Colors (NEW)
+        // ============================================
+        
+        /// <summary>Hint highlight color — Pulsing White-Cyan</summary>
+        public static readonly Color HintHighlightColor = new Color(0.7f, 1f, 1f, 1f);
+        
+        /// <summary>Hint button active color</summary>
+        public static readonly Color HintButtonActiveColor = PrimaryColor;
+        
+        /// <summary>Hint button inactive color (no hints remaining)</summary>
+        public static readonly Color HintButtonInactiveColor = InactiveColor;
+
+        // ============================================
+        // Level Select Colors (NEW)
+        // ============================================
+        
+        /// <summary>Level node — unlocked but not completed</summary>
+        public static readonly Color LevelNodeUnlocked = new Color(0.15f, 0.12f, 0.25f, 0.9f);
+        
+        /// <summary>Level node — completed</summary>
+        public static readonly Color LevelNodeCompleted = new Color(0.1f, 0.25f, 0.15f, 0.9f);
+        
+        /// <summary>Level node — current level</summary>
+        public static readonly Color LevelNodeCurrent = new Color(0f, 0.898f, 1f, 0.3f);
+        
+        /// <summary>Level node — locked</summary>
+        public static readonly Color LevelNodeLocked = new Color(0.1f, 0.1f, 0.12f, 0.6f);
+
+        // ============================================
+        // Score Display Colors (NEW)
+        // ============================================
+        
+        /// <summary>New best score badge color</summary>
+        public static readonly Color NewBestColor = WarningColor;
+        
+        /// <summary>Score text color</summary>
+        public static readonly Color ScoreTextColor = TextPrimary;
+        
+        /// <summary>Bonus text color (time bonus, perfect bonus)</summary>
+        public static readonly Color BonusTextColor = SuccessColor;
+
+        // ============================================
+        // Rewarded Ad Button Colors (NEW)
+        // ============================================
+        
+        /// <summary>Watch ad button gradient start</summary>
+        public static readonly Color AdButtonColorStart = new Color(0.467f, 0.114f, 0.882f, 1f); // #771CDD — Purple
+        
+        /// <summary>Watch ad button gradient end</summary>
+        public static readonly Color AdButtonColorEnd = new Color(0.204f, 0.580f, 0.961f, 1f); // #3494F5 — Blue
     }
 }
