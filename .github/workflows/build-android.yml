@@ -17,13 +17,13 @@ on:
         default: true
 
 env:
-  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
   UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
   # ───────────────────────────────────────────────
-  #  Build Android APK (for testing / sideloading)
+  #  Activate Unity License + Build APK
   # ───────────────────────────────────────────────
   build-apk:
     name: "📱 Build APK"
@@ -32,14 +32,12 @@ jobs:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_apk }}
 
     steps:
-      # ─── Checkout ───
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
 
-      # ─── Cache Library folder ───
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -48,21 +46,14 @@ jobs:
           restore-keys: |
             Library-Android-
 
-      # ─── Build APK ───
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: Android
           buildName: LineRush
           androidAppBundle: false
-          unityVersion: 6000.0.58f2
-          androidKeystoreName: ""
-          androidKeystoreBase64: ""
-          androidKeystorePass: ""
-          androidKeyaliasName: ""
-          androidKeyaliasPass: ""
+          unityVersion: auto
 
-      # ─── Upload APK artifact ───
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -71,7 +62,7 @@ jobs:
           retention-days: 30
 
   # ───────────────────────────────────────────────
-  #  Build Android AAB (for Play Store upload)
+  #  Build Android AAB (Play Store)
   # ───────────────────────────────────────────────
   build-aab:
     name: "🏪 Build AAB (Play Store)"
@@ -80,14 +71,12 @@ jobs:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.build_aab }}
 
     steps:
-      # ─── Checkout ───
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
 
-      # ─── Cache Library folder ───
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -96,21 +85,19 @@ jobs:
           restore-keys: |
             Library-Android-
 
-      # ─── Build AAB ───
       - name: Build Android AAB
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: Android
           buildName: LineRush
           androidAppBundle: true
-          unityVersion: 6000.0.58f2
+          unityVersion: auto
           androidKeystoreName: ${{ secrets.ANDROID_KEYSTORE_NAME }}
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
-      # ─── Upload AAB artifact ───
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
