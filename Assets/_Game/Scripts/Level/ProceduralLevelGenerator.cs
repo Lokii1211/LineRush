@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using _Game.Line;
 using SerapKeremGameKit._LevelSystem;
-using Level = SerapKeremGameKit._LevelSystem.Level;
+
 
 namespace _Game.Level
 {
+using Level = SerapKeremGameKit._LevelSystem.Level;
     /// <summary>
     /// Procedural level generator for LineRush.
     /// Creates line configurations at runtime using seeded randomness
