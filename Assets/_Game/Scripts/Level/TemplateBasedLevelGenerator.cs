@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using _Game.Line;
 using SerapKeremGameKit._LevelSystem;
-using Level = SerapKeremGameKit._LevelSystem.Level;
+
 
 namespace _Game.Level
 {
+using Level = SerapKeremGameKit._LevelSystem.Level;
     /// <summary>
     /// Generates levels from pre-defined templates in LevelTemplateLibrary.
     /// Similar to ProceduralLevelGenerator but uses hand-crafted designs.
